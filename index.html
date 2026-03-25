@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mitchell Richens · Made This For You, Sandy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue:#287DFA; --blue-dark:#1565d8; --blue-light:#e8f1ff;
+  --yellow:#FFB400; --yellow-light:#fff8e0;
+  --dark:#0d1117; --mid:#3a4a5c; --muted:#7a8fa6;
+  --bg:#f7f9ff; --white:#ffffff; --radius:20px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--dark);overflow-x:hidden;cursor:none;}
+
+/* CURSOR */
+#cursor{width:14px;height:14px;background:var(--blue);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s;mix-blend-mode:multiply;}
+#cursor-trail{width:36px;height:36px;border:2px solid var(--blue);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);opacity:.35;}
+body:has(a:hover) #cursor,body:has(button:hover) #cursor{width:28px;height:28px;background:var(--yellow);}
+#confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:9997;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:1rem 3rem;background:rgba(247,249,255,.92);backdrop-filter:blur(18px);border-bottom:1px solid rgba(40,125,250,.12);}
+.nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:var(--blue);display:flex;align-items:center;gap:.5rem;}
+.nav-logo span{color:var(--yellow);}
+.nav-links{display:flex;gap:2rem;list-style:none;}
+.nav-links a{font-size:.82rem;font-weight:500;color:var(--mid);text-decoration:none;transition:color .2s;}
+.nav-links a:hover{color:var(--blue);}
+
+/* HERO */
+#hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8rem 2rem 5rem;position:relative;overflow:hidden;background:var(--white);}
+.hero-bg-blob{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
+.blob1{width:600px;height:600px;background:rgba(40,125,250,.08);top:-100px;left:-150px;}
+.blob2{width:500px;height:500px;background:rgba(255,180,0,.1);bottom:-50px;right:-100px;}
+.blob3{width:300px;height:300px;background:rgba(40,125,250,.06);bottom:100px;left:50px;}
+
+/* FLOATERS */
+.floater{position:absolute;pointer-events:none;animation:floatUp linear forwards;opacity:0;}
+@keyframes floatUp{
+  0%{opacity:0;transform:translate(0,0) rotate(0deg) scale(.5);}
+  10%{opacity:1;}
+  90%{opacity:.8;}
+  100%{opacity:0;transform:translate(var(--tx),var(--ty)) rotate(var(--rot)) scale(1);}
+}
+
+/* HELLO TAG */
+.hello-tag{display:inline-block;background:var(--yellow);color:var(--dark);font-family:'Syne',sans-serif;font-weight:800;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase;padding:.45rem 1.2rem;border-radius:999px;margin-bottom:1.5rem;animation:tagPop .5s cubic-bezier(.34,1.56,.64,1) .3s both;}
+@keyframes tagPop{from{transform:scale(0) rotate(-10deg);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* LETTER */
+.hero-note{max-width:680px;width:100%;background:var(--white);border:2px solid rgba(40,125,250,.15);border-radius:var(--radius);padding:2.4rem 2.8rem;margin-bottom:2rem;box-shadow:0 8px 40px rgba(40,125,250,.08),0 2px 8px rgba(0,0,0,.04);text-align:left;position:relative;}
+.hero-note::before{content:'A note for Sandy ✉';position:absolute;top:-14px;left:2rem;background:var(--yellow);color:var(--dark);font-family:'Syne',sans-serif;font-size:.72rem;font-weight:800;letter-spacing:.08em;padding:.25rem .9rem;border-radius:999px;}
+.hero-note-text{font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(.95rem,1.6vw,1.1rem);font-weight:400;line-height:1.9;color:var(--dark);min-height:10em;}
+.hero-note-text .note-name{font-weight:800;color:var(--blue);}
+.typed-cursor{display:inline-block;width:2.5px;height:1.1em;background:var(--blue);margin-left:2px;border-radius:2px;animation:blink .9s step-end infinite;vertical-align:text-bottom;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+.hero-sub{font-family:'Syne',sans-serif;font-size:clamp(1rem,2.2vw,1.35rem);font-weight:600;color:var(--mid);margin-bottom:2rem;}
+.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.9rem 2rem;border-radius:12px;font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;text-decoration:none;border:none;cursor:none;transition:all .25s cubic-bezier(.34,1.56,.64,1);}
+.btn-blue{background:var(--blue);color:#fff;}
+.btn-blue:hover{transform:translateY(-4px) scale(1.04);box-shadow:0 16px 32px rgba(40,125,250,.35);}
+.btn-yellow{background:var(--yellow);color:var(--dark);}
+.btn-yellow:hover{transform:translateY(-4px) scale(1.04);box-shadow:0 16px 32px rgba(255,180,0,.4);}
+
+/* AI BANNER */
+.ai-banner{background:linear-gradient(135deg,#0d1117 0%,#1a2744 100%);color:#fff;padding:3rem;position:relative;overflow:hidden;}
+.ai-banner::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 30px,rgba(40,125,250,.04) 30px,rgba(40,125,250,.04) 60px);}
+.ai-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:2.5rem;position:relative;}
+.ai-emoji{font-size:4rem;flex-shrink:0;animation:spinHover 6s ease-in-out infinite;}
+@keyframes spinHover{0%,100%{transform:rotate(-5deg) scale(1)}50%{transform:rotate(8deg) scale(1.1)}}
+.ai-text h3{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;margin-bottom:.6rem;color:var(--yellow);}
+.ai-text p{font-size:.95rem;line-height:1.8;color:rgba(255,255,255,.75);}
+.ai-text p strong{color:#fff;}
+
+/* STATS */
+.stats-section{background:var(--blue);padding:4rem 2rem;}
+.stats-grid{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;}
+.stat-box{text-align:center;padding:2rem 1rem;border-radius:var(--radius);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);transition:all .3s cubic-bezier(.34,1.56,.64,1);opacity:0;transform:translateY(30px) scale(.95);}
+.stat-box.visible{opacity:1;transform:translateY(0) scale(1);}
+.stat-box:hover{background:rgba(255,255,255,.18);transform:translateY(-8px) scale(1.04) !important;}
+.stat-num{font-family:'Syne',sans-serif;font-size:3.8rem;font-weight:800;color:#fff;line-height:1;margin-bottom:.4rem;}
+.stat-label{font-size:.78rem;color:rgba(255,255,255,.7);line-height:1.5;font-weight:500;}
+.stat-box:hover .stat-num{color:var(--yellow);}
+
+/* SECTIONS */
+.section{padding:6rem 2rem;}
+.section-inner{max-width:1080px;margin:0 auto;}
+.section-label{display:inline-flex;align-items:center;gap:.6rem;background:var(--blue-light);color:var(--blue);font-family:'Syne',sans-serif;font-weight:700;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;padding:.4rem 1rem;border-radius:999px;margin-bottom:1.5rem;}
+.section-title{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:800;line-height:1.15;color:var(--dark);margin-bottom:1rem;}
+.section-title .accent{color:var(--blue);}
+.section-title .accent-y{color:var(--yellow);}
+
+/* WHY CARDS */
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem;}
+.why-card{background:var(--white);border-radius:var(--radius);padding:2rem;border:2px solid transparent;box-shadow:0 4px 20px rgba(40,125,250,.06);opacity:0;transition:all .5s cubic-bezier(.16,1,.3,1);}
+.why-card:nth-child(odd){transform:rotate(-.8deg) translateY(16px);}
+.why-card:nth-child(even){transform:rotate(.6deg) translateY(16px);}
+.why-card.visible:nth-child(odd){opacity:1;transform:rotate(-.8deg) translateY(0);}
+.why-card.visible:nth-child(even){opacity:1;transform:rotate(.6deg) translateY(0);}
+.why-card:hover{border-color:var(--blue);transform:rotate(0) translateY(-8px) scale(1.02) !important;box-shadow:0 20px 40px rgba(40,125,250,.14);}
+.why-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:1.2rem;}
+.why-icon.blue{background:var(--blue-light);}
+.why-icon.yellow{background:var(--yellow-light);}
+.why-title{font-family:'Syne',sans-serif;font-size:1.08rem;font-weight:700;margin-bottom:.6rem;color:var(--dark);}
+.why-body{font-size:.875rem;color:var(--muted);line-height:1.8;}
+
+/* TIMELINE */
+.timeline{position:relative;margin-top:3rem;}
+.tl-line{position:absolute;left:1.5rem;top:1rem;bottom:2rem;width:3px;background:linear-gradient(to bottom,var(--blue),var(--yellow),transparent);border-radius:2px;}
+.tl-item{display:flex;gap:2.5rem;margin-bottom:1.8rem;padding-left:4.5rem;position:relative;opacity:0;transition:all .7s cubic-bezier(.16,1,.3,1);}
+.tl-item:nth-child(odd){transform:translateX(-40px);}
+.tl-item:nth-child(even){transform:translateX(40px);}
+.tl-item.visible{opacity:1;transform:translateX(0);}
+.tl-dot{position:absolute;left:.6rem;top:1.2rem;width:20px;height:20px;border-radius:50%;background:var(--blue);border:3px solid var(--white);box-shadow:0 0 0 3px var(--blue);flex-shrink:0;}
+.tl-dot.yellow{background:var(--yellow);box-shadow:0 0 0 3px var(--yellow);}
+.tl-card{background:var(--white);border-radius:var(--radius);padding:2rem;width:100%;border:2px solid transparent;box-shadow:0 4px 20px rgba(0,0,0,.05);transition:all .3s cubic-bezier(.34,1.56,.64,1);}
+.tl-card:hover{border-color:var(--blue);transform:translateX(8px);box-shadow:0 16px 40px rgba(40,125,250,.12);}
+.tl-date{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:.4rem;}
+.tl-role{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;color:var(--dark);margin-bottom:.2rem;}
+.tl-co{font-size:.88rem;color:var(--muted);margin-bottom:1rem;font-weight:500;}
+.tl-points{list-style:none;display:flex;flex-direction:column;gap:.4rem;}
+.tl-points li{font-size:.855rem;color:var(--mid);line-height:1.65;padding-left:1rem;position:relative;}
+.tl-points li::before{content:'';position:absolute;left:0;top:.58em;width:5px;height:5px;border-radius:50%;background:var(--yellow);}
+.tl-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:1rem;}
+.tag{font-size:.72rem;font-weight:600;padding:.28rem .75rem;border-radius:999px;background:var(--blue-light);color:var(--blue);transition:all .2s;cursor:none;}
+.tag:hover{background:var(--blue);color:#fff;transform:translateY(-2px);}
+.tag.y{background:var(--yellow-light);color:#a37200;}
+.tag.y:hover{background:var(--yellow);color:var(--dark);}
+
+/* PASSION */
+.passion-section{background:linear-gradient(135deg,#fff8e0 0%,#e8f1ff 100%);border-top:1px solid rgba(40,125,250,.1);border-bottom:1px solid rgba(40,125,250,.1);}
+.passion-quote{font-family:'Syne',sans-serif;font-size:clamp(1.6rem,3vw,2.6rem);font-weight:800;color:var(--dark);line-height:1.4;margin-bottom:2rem;}
+.passion-quote em{color:var(--blue);font-style:normal;}
+.passion-body{font-size:1rem;color:var(--mid);line-height:1.9;margin-bottom:1.2rem;max-width:760px;}
+.passion-body strong{color:var(--dark);}
+.passion-highlights{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:2.5rem;}
+.passion-hl{background:white;border-radius:16px;padding:1.5rem;border-left:4px solid var(--blue);box-shadow:0 4px 16px rgba(40,125,250,.08);transition:all .3s;opacity:0;transform:translateY(20px);}
+.passion-hl.visible{opacity:1;transform:translateY(0);transition:all .6s ease;}
+.passion-hl:nth-child(2){border-left-color:var(--yellow);}
+.passion-hl:nth-child(3){border-left-color:#7c3aed;}
+.passion-hl:hover{transform:translateY(-5px);box-shadow:0 16px 32px rgba(40,125,250,.12);}
+.passion-hl-icon{font-size:1.8rem;margin-bottom:.7rem;}
+.passion-hl-title{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:var(--dark);margin-bottom:.4rem;}
+.passion-hl-body{font-size:.82rem;color:var(--muted);line-height:1.7;}
+
+/* SKILLS */
+.skills-section{background:var(--white);}
+.skills-cols{display:grid;grid-template-columns:repeat(2,1fr);gap:2.5rem;margin-top:3rem;}
+.skill-group{opacity:0;transform:translateY(24px);}
+.skill-group.visible{opacity:1;transform:translateY(0);transition:all .65s ease;}
+.skill-group-label{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
+.skill-group-label::after{content:'';flex:1;height:1px;background:var(--blue-light);}
+.pill-wrap{display:flex;flex-wrap:wrap;gap:.5rem;}
+.pill{font-size:.83rem;font-weight:500;padding:.45rem 1rem;border-radius:999px;border:1.5px solid #e2eaff;color:var(--mid);background:var(--bg);transition:all .22s cubic-bezier(.34,1.56,.64,1);cursor:none;}
+.pill:hover{background:var(--blue);color:#fff;border-color:var(--blue);transform:translateY(-3px) scale(1.05);box-shadow:0 8px 18px rgba(40,125,250,.25);}
+
+/* CTA */
+.cta-section{background:var(--dark);padding:7rem 2rem;text-align:center;position:relative;overflow:hidden;}
+.cta-blob{position:absolute;border-radius:50%;filter:blur(100px);pointer-events:none;width:600px;height:600px;background:rgba(40,125,250,.15);top:50%;left:50%;transform:translate(-50%,-50%);}
+.cta-title{font-family:'Syne',sans-serif;font-size:clamp(2.5rem,5vw,4.5rem);font-weight:800;color:#fff;margin-bottom:1rem;position:relative;}
+.cta-title span{color:var(--yellow);}
+.cta-sub{font-size:1rem;color:rgba(255,255,255,.55);margin-bottom:3rem;position:relative;}
+.cta-btns{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;position:relative;}
+
+/* FOOTER */
+footer{background:var(--dark);border-top:1px solid rgba(255,255,255,.07);padding:1.8rem 3rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;}
+footer p{font-size:.78rem;color:rgba(255,255,255,.3);}
+.footer-love span{color:var(--yellow);}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(32px);}
+.reveal.visible{opacity:1;transform:translateY(0);transition:opacity .7s ease,transform .7s cubic-bezier(.16,1,.3,1);}
+
+/* RESPONSIVE */
+@media(max-width:760px){
+  nav{padding:1rem 1.5rem;} .nav-links{display:none;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+  .why-grid,.passion-highlights,.skills-cols{grid-template-columns:1fr;}
+  .ai-inner{flex-direction:column;text-align:center;}
+  footer{flex-direction:column;text-align:center;}
+  .hero-note{padding:1.6rem;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+<div id="cursor"></div>
+<div id="cursor-trail"></div>
+
+<nav>
+  <div class="nav-logo">✈ Mitchell <span>Richens</span></div>
+  <ul class="nav-links">
+    <li><a href="#why">Why Trip.com</a></li>
+    <li><a href="#journey">Journey</a></li>
+    <li><a href="#passion">Passion</a></li>
+    <li><a href="#contact">Say Hello</a></li>
+  </ul>
+</nav>
+
+<section id="hero">
+  <div class="hero-bg-blob blob1"></div>
+  <div class="hero-bg-blob blob2"></div>
+  <div class="hero-bg-blob blob3"></div>
+  <div class="hello-tag">👋 A personal message for Sandy</div>
+  <div class="hero-note">
+    <div class="hero-note-text" id="hero-title"></div>
+  </div>
+  <p class="hero-sub" id="hero-sub" style="opacity:0;">Mitchell Richens &nbsp;·&nbsp; Recruitment Leader &nbsp;·&nbsp; Built For Trip.com Group</p>
+  <div class="hero-btns" id="hero-btns" style="opacity:0;">
+    <a href="#why" class="btn btn-blue">✦ See Why I'm the Right Fit</a>
+    <a href="#contact" class="btn btn-yellow">💬 Let's Talk</a>
+  </div>
+</section>
+
+<div class="ai-banner">
+  <div class="ai-inner">
+    <div class="ai-emoji">🤖</div>
+    <div class="ai-text">
+      <h3>I built this with AI — and that's the point.</h3>
+      <p>I created this page using <strong>vibe coding</strong> — working with AI tools to bring ideas to life without traditional development skills. I built it specifically for you, Sandy, because I wanted to show rather than just tell. I'm always teaching myself new ways to use AI in my career: from smarter candidate sourcing, to automated reporting, to building things like this. It's something I'm genuinely excited about bringing into a TA team.</p>
+    </div>
+  </div>
+</div>
+
+<section class="stats-section">
+  <div class="stats-grid">
+    <div class="stat-box"><div class="stat-num" data-target="14" data-suffix="+">0</div><div class="stat-label">Years in<br>Talent Acquisition</div></div>
+    <div class="stat-box"><div class="stat-num" data-target="8">0</div><div class="stat-label">European Markets led<br>at Qatar Airways</div></div>
+    <div class="stat-box"><div class="stat-num" data-target="400" data-suffix="+">0</div><div class="stat-label">Employees scaled<br>at easyJet holidays</div></div>
+    <div class="stat-box"><div class="stat-num" data-prefix="£" data-target="250" data-suffix="m">0</div><div class="stat-label">PBT delivered by<br>the business we built</div></div>
+  </div>
+</section>
+
+<section class="section" id="why">
+  <div class="section-inner">
+    <div class="section-label">✦ What I bring</div>
+    <h2 class="section-title reveal">Six reasons I'm <span class="accent">genuinely excited</span><br>to be your next hire.</h2>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-icon blue">🌍</div>
+        <div class="why-title">EMEA &amp; APAC Recruitment Experience</div>
+        <div class="why-body">At Qatar Airways I was responsible for TA across 8 European markets — Spain, France, Benelux, DACH, Nordics, and a 500-seat contact centre in Poland — with some exposure to APAC hiring too. Navigating cross-border hiring, local labour law, and cultural nuance is something I've had real hands-on experience with.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon yellow">✈️</div>
+        <div class="why-title">A Travel Industry Background</div>
+        <div class="why-body">I've spent the bulk of my career in travel and aviation. I understand the pace, the passion, and the purpose — which means I can represent Trip.com authentically to candidates and genuinely connect with the business I'm hiring for.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon blue">🚀</div>
+        <div class="why-title">Team Builder &amp; People Developer</div>
+        <div class="why-body">I was the first TA hire at easyJet holidays. I designed the operating model, built the team, and have spent nearly five years developing recruiters alongside doing the job myself. Coaching people is a core part of what a TA leader does — and it's something I take seriously and put real effort into.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon yellow">📊</div>
+        <div class="why-title">Data Runs Through Everything I Do</div>
+        <div class="why-body">MI dashboards, board-level reporting, recruitment analytics, ROI tracking — I've built data infrastructure at every organisation I've worked in. I use insights to tell better stories, make smarter decisions, and prove the impact TA is making.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon blue">💡</div>
+        <div class="why-title">Employer Brand: Zero to Launched</div>
+        <div class="why-body">I took easyJet holidays from having no external profile whatsoever to a fully realised employer brand — EVP, careers site, social strategy, and targeted attraction campaigns. I'd love the chance to help grow Trip.com's employer presence across EMEA.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon yellow">⚡</div>
+        <div class="why-title">Comfortable Across the Full Spectrum</div>
+        <div class="why-body">Volume contact centre hiring. Executive-level search. Graduate schemes. Specialist tech roles. I've worked across the full range and know how to adapt pace, process, and approach depending on what the business actually needs.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="journey" style="background:var(--bg);">
+  <div class="section-inner">
+    <div class="section-label">✦ Career Path</div>
+    <h2 class="section-title reveal">Where I've been<br><span class="accent">shapes where I'm heading.</span></h2>
+    <div class="timeline">
+      <div class="tl-line"></div>
+
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-card">
+          <div class="tl-date">Aug 2021 – Present · Nearly 5 Years</div>
+          <div class="tl-role">Talent Acquisition &amp; Employer Brand Lead</div>
+          <div class="tl-co">easyJet holidays · Senior Manager · Digital Tour Operator</div>
+          <ul class="tl-points">
+            <li>First TA hire — designed and built the entire function, operating model, and team from zero</li>
+            <li>Scaled the business from startup to 400+ employees; supported delivery of £250m PBT</li>
+            <li>Launched and led Employer Brand — EVP, careers site, social strategy, and attraction campaigns</li>
+            <li>Built comprehensive MI suite and board-level TA reporting with ROI tracking</li>
+            <li>Launched graduate scheme and early careers pipeline; introduced recruitment technology and automation</li>
+            <li>Embedded ED&amp;I hiring strategy with measurable targets and data-led outcomes</li>
+          </ul>
+          <div class="tl-tags">
+            <span class="tag">Digital Tour Operator</span><span class="tag">Built from Scratch</span><span class="tag">Employer Brand</span><span class="tag y">Scale-Up</span><span class="tag y">Team Leadership</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot yellow"></div>
+        <div class="tl-card">
+          <div class="tl-date">June 2020 – Aug 2021 · Fixed Term</div>
+          <div class="tl-role">Talent Acquisition Operations Manager</div>
+          <div class="tl-co">Queen Mary University of London</div>
+          <ul class="tl-points">
+            <li>Led Recruitment &amp; HR Operations through peak pandemic disruption</li>
+            <li>Project managed major HRIS upgrade and inclusive data redesign</li>
+            <li>Delivered board-level workforce reporting with MI dashboards</li>
+            <li>Partnered with Deans (ELT) and Department Heads on workforce planning</li>
+          </ul>
+          <div class="tl-tags">
+            <span class="tag">Ops Leadership</span><span class="tag y">HRIS</span><span class="tag">Stakeholder Management</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-card">
+          <div class="tl-date">May 2019 – June 2020</div>
+          <div class="tl-role">Regional Talent Acquisition Business Partner</div>
+          <div class="tl-co">Qatar Airways · World's Leading Airline · Europe &amp; APAC Region</div>
+          <ul class="tl-points">
+            <li>Owned TA strategy and full-cycle delivery across 8 European markets, reporting to Global SVP TA</li>
+            <li>Designed and delivered volume recruitment framework for a 500-seat Customer Contact Centre in Poland</li>
+            <li>Opened new stations in Dubrovnik and Thessaloniki — ground operations teams delivered on time</li>
+            <li>Managed multi-country hiring across Spain, France, Benelux, DACH, Nordics, and APAC exposure</li>
+            <li>Produced talent market intelligence and recruitment analytics for global HR leadership</li>
+          </ul>
+          <div class="tl-tags">
+            <span class="tag">EMEA · 8 Markets</span><span class="tag">APAC Exposure</span><span class="tag">Volume Hiring</span><span class="tag y">Global Airline</span><span class="tag">Market Intel</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot yellow"></div>
+        <div class="tl-card">
+          <div class="tl-date">Jan 2017 – May 2019</div>
+          <div class="tl-role">Talent Acquisition &amp; HR Service Delivery Manager</div>
+          <div class="tl-co">London South Bank University</div>
+          <ul class="tl-points">
+            <li>Led multi-functional team of TA Specialists and HR Advisors</li>
+            <li>Led full Employer Brand transformation — new careers site positioning LSBU as employer of choice</li>
+            <li>Implemented self-service portal and automated HR workflows, cutting response times significantly</li>
+          </ul>
+          <div class="tl-tags">
+            <span class="tag">Team Leadership</span><span class="tag y">Employer Brand</span><span class="tag">HR Tech</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-card">
+          <div class="tl-date">Aug 2010 – Dec 2016 · 6+ Years</div>
+          <div class="tl-role">Senior Recruitment Manager</div>
+          <div class="tl-co">Morgan Hunt · Leading UK Recruitment Consultancy</div>
+          <ul class="tl-points">
+            <li>Progressed from junior consultant to Senior Regional Manager across London and Manchester</li>
+            <li>P&amp;L ownership of MSP contracts with full budgeting, forecasting and commercial accountability</li>
+            <li>Built and managed high-performing teams of recruiters and account managers</li>
+          </ul>
+          <div class="tl-tags">
+            <span class="tag">Commercial Recruitment</span><span class="tag y">P&amp;L</span><span class="tag">MSP Contracts</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section passion-section" id="passion">
+  <div class="section-inner">
+    <div class="section-label">✦ Why Trip.com Group</div>
+    <div class="passion-quote reveal">
+      "Everyone is on a trip —<br>whether it's a <em>career trip</em> or a life trip."<br>I want mine to be with you.
+    </div>
+    <p class="passion-body reveal">I've built my career inside travel businesses that are genuinely changing how the world moves. Trip.com Group sits at the top of that world — four iconic brands, 30+ countries, 30,000+ people — and you're still growing. That combination of scale and ambition is genuinely rare, and it's exactly where I want to be.</p>
+    <p class="passion-body reveal">What draws me most is the opportunity. <strong>EMEA is growing, and with growth comes the chance to build something.</strong> To shape a TA team that's a true strategic partner to the business. To build an employer brand that makes Trip.com a destination for the best talent in Europe. I've done this before, and I'd love to do it again — this time on a truly global stage.</p>
+    <p class="passion-body reveal">I also connect deeply with your values around internal mobility, global career paths, and continuous learning. That's how I think about talent — and it's the kind of culture I want to be part of and champion externally.</p>
+    <div class="passion-highlights">
+      <div class="passion-hl"><div class="passion-hl-icon">🌐</div><div class="passion-hl-title">Global Scale</div><div class="passion-hl-body">4 brands, 30 countries, 30,000+ people. The ambition here matches the scale — and I want to be part of it.</div></div>
+      <div class="passion-hl"><div class="passion-hl-icon">📈</div><div class="passion-hl-title">EMEA Growth Moment</div><div class="passion-hl-body">The European business is expanding. This is exactly the right moment to build a TA team and brand that can scale with it.</div></div>
+      <div class="passion-hl"><div class="passion-hl-icon">🤝</div><div class="passion-hl-title">A Culture I Believe In</div><div class="passion-hl-body">Internal mobility, global rotations, continuous development — a place that genuinely invests in people. That's something I want to be part of and champion externally.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section skills-section">
+  <div class="section-inner">
+    <div class="section-label">✦ Capabilities</div>
+    <h2 class="section-title reveal">What I bring <span class="accent-y">to the table.</span></h2>
+    <div class="skills-cols">
+      <div class="skill-group">
+        <div class="skill-group-label">Talent Acquisition</div>
+        <div class="pill-wrap">
+          <span class="pill">Full-Cycle Recruitment</span><span class="pill">Executive Hiring</span><span class="pill">Volume Hiring</span><span class="pill">Graduate Programmes</span><span class="pill">Assessment Design</span><span class="pill">Talent Mapping</span><span class="pill">Workforce Planning</span><span class="pill">Offer Negotiation</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-label">Leadership &amp; Strategy</div>
+        <div class="pill-wrap">
+          <span class="pill">Team Leadership &amp; Coaching</span><span class="pill">TA Operating Model Design</span><span class="pill">Stakeholder Influence</span><span class="pill">Board-Level Reporting</span><span class="pill">Function Build</span><span class="pill">P&amp;L Ownership</span><span class="pill">MSP Management</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-label">Employer Brand &amp; EVP</div>
+        <div class="pill-wrap">
+          <span class="pill">EVP Development</span><span class="pill">Careers Site</span><span class="pill">Social Strategy</span><span class="pill">Attraction Campaigns</span><span class="pill">ED&amp;I Hiring Strategy</span><span class="pill">University Partnerships</span><span class="pill">Brand from Zero</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-label">Data &amp; Technology</div>
+        <div class="pill-wrap">
+          <span class="pill">MI Dashboards</span><span class="pill">Recruitment Analytics</span><span class="pill">ATS Implementation</span><span class="pill">HRIS Management</span><span class="pill">Process Automation</span><span class="pill">Market Intelligence</span><span class="pill">AI Tools</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="contact">
+  <div class="cta-blob"></div>
+  <h2 class="cta-title">Ready to chat, <span>Sandy?</span> 👋</h2>
+  <p class="cta-sub">Recruitment Leader · Trip.com Group EMEA · Let's make something happen.</p>
+  <div class="cta-btns">
+    <a href="mailto:mitchell.richens@email.com" class="btn btn-yellow">✉ Get in Touch</a>
+    <a href="https://linkedin.com/in/mitchell-richens" class="btn btn-blue">in Connect on LinkedIn</a>
+  </div>
+</section>
+
+<footer>
+  <p>Mitchell Richens · Talent Acquisition &amp; Employer Brand Lead · Made with AI, made with purpose.</p>
+  <p class="footer-love">Built for <span>Trip.com Group</span> ✈</p>
+</footer>
+
+<script>
+// ── CURSOR ──
+var cursor = document.getElementById('cursor');
+var trail  = document.getElementById('cursor-trail');
+var mx=0, my=0, tx=0, ty=0;
+document.addEventListener('mousemove', function(e) {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px';
+  cursor.style.top  = my + 'px';
+});
+setInterval(function() {
+  tx += (mx-tx)*0.18; ty += (my-ty)*0.18;
+  trail.style.left = tx+'px'; trail.style.top = ty+'px';
+}, 16);
+
+// ── FLOATING EMOJIS ──
+var EMOJIS = ['✈️','🌍','🏖️','⭐','🗺️','🌏','🎯','💼','🚀','🎉','🌐','📊','🏨','🛫'];
+function spawnFloater() {
+  var el = document.createElement('div');
+  el.className = 'floater';
+  el.textContent = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+  el.style.left = Math.random()*window.innerWidth + 'px';
+  el.style.top  = Math.random()*window.innerHeight + 'px';
+  var angle = Math.random()*360;
+  var dist  = 120 + Math.random()*180;
+  el.style.setProperty('--tx', Math.cos(angle*Math.PI/180)*dist + 'px');
+  el.style.setProperty('--ty', Math.sin(angle*Math.PI/180)*dist + 'px');
+  el.style.setProperty('--rot', (Math.random()*80-40) + 'deg');
+  var dur = 2000 + Math.random()*2000;
+  el.style.animationDuration = dur + 'ms';
+  el.style.fontSize = (1.2 + Math.random()*2) + 'rem';
+  document.getElementById('hero').appendChild(el);
+  setTimeout(function(){ el.remove(); }, dur+100);
+}
+setInterval(spawnFloater, 320);
+
+// ── TYPEWRITER ──
+var titleEl = document.getElementById('hero-title');
+var subEl   = document.getElementById('hero-sub');
+var btnsEl  = document.getElementById('hero-btns');
+
+var MSG = "Hi Sandy,\n\nI know you're busy \u2014 so I'll get straight to the point.\n\nI applied for the Recruitment Leader role. I was really disappointed not to progress. When I saw it re-advertised, I asked myself: what would a good recruiter actually do here?\n\nMake it harder to overlook.\n\nSo I built you this \u2014 an interactive CV made specifically for you, using AI. It takes about 3 minutes to scroll through. I think it's worth it.\n\nI really want to work for Trip.com.\n\n\u2014 Mitchell \ud83d\udc99";
+
+function renderMsg(txt) {
+  var html = txt
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\n/g,'<br>')
+    .replace(/(Sandy)/g,'<span class="note-name">$1</span>');
+  titleEl.innerHTML = html + '<span class="typed-cursor"></span>';
+}
+
+var charIdx = 0;
+function typeChar() {
+  if (charIdx <= MSG.length) {
+    renderMsg(MSG.slice(0, charIdx));
+    charIdx++;
+    var ch = MSG[charIdx-1];
+    var delay = (ch==='.'||ch==='?'||ch==='!') ? 320
+              : ch===',' ? 140
+              : ch==='\n' ? 220
+              : 28 + Math.random()*18;
+    setTimeout(typeChar, delay);
+  } else {
+    setTimeout(function() {
+      subEl.style.transition  = 'opacity .7s ease, transform .7s ease';
+      subEl.style.transform   = 'translateY(0)';
+      subEl.style.opacity     = '1';
+      setTimeout(function() {
+        btnsEl.style.transition = 'opacity .7s ease, transform .7s ease';
+        btnsEl.style.transform  = 'translateY(0)';
+        btnsEl.style.opacity    = '1';
+      }, 350);
+    }, 600);
+  }
+}
+setTimeout(typeChar, 700);
+
+// ── CONFETTI ──
+var canvas = document.getElementById('confetti-canvas');
+var ctx    = canvas.getContext('2d');
+canvas.width  = window.innerWidth;
+canvas.height = window.innerHeight;
+window.addEventListener('resize', function() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+var COLORS = ['#287DFA','#FFB400','#ffffff','#60a5fa','#fcd34d','#34d399','#f472b6'];
+var pieces  = [];
+
+function createConfetti(x, y, count) {
+  count = count || 100;
+  for (var i=0; i<count; i++) {
+    pieces.push({
+      x:    (x !== undefined) ? x : Math.random()*canvas.width,
+      y:    (y !== undefined) ? y : -10,
+      vx:   (Math.random()-0.5)*12,
+      vy:   3 + Math.random()*7,
+      color: COLORS[Math.floor(Math.random()*COLORS.length)],
+      rot:  Math.random()*360,
+      rotV: (Math.random()-0.5)*8,
+      w:    8 + Math.random()*8,
+      h:    4 + Math.random()*5,
+      life: 1,
+      decay: 0.008 + Math.random()*0.006
+    });
+  }
+}
+
+function drawConfetti() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  pieces = pieces.filter(function(p){ return p.life > 0; });
+  pieces.forEach(function(p) {
+    p.x += p.vx; p.y += p.vy; p.vy += 0.18; p.vx *= 0.99;
+    p.rot += p.rotV; p.life -= p.decay;
+    ctx.save();
+    ctx.globalAlpha = p.life;
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot * Math.PI/180);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+    ctx.restore();
+  });
+  requestAnimationFrame(drawConfetti);
+}
+drawConfetti();
+
+setTimeout(function() {
+  createConfetti(window.innerWidth*0.25, window.innerHeight*0.4, 80);
+  createConfetti(window.innerWidth*0.75, window.innerHeight*0.4, 80);
+  createConfetti(window.innerWidth*0.5,  window.innerHeight*0.3, 60);
+}, 1000);
+
+document.querySelectorAll('.btn').forEach(function(btn) {
+  btn.addEventListener('mouseenter', function() { createConfetti(undefined, undefined, 40); });
+});
+
+// ── INTERSECTION OBSERVER ──
+var io = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (!entry.isIntersecting) return;
+    var el    = entry.target;
+    var delay = parseInt(el.dataset.delay || 0);
+    setTimeout(function(){ el.classList.add('visible'); }, delay);
+    el.querySelectorAll('[data-target]').forEach(function(c) {
+      setTimeout(function(){ animCount(c); }, delay+200);
+    });
+    io.unobserve(el);
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.stat-box,.why-card,.tl-item,.skill-group,.passion-hl,.reveal').forEach(function(el, i) {
+  el.dataset.delay = (i % 4) * 100;
+  io.observe(el);
+});
+
+// ── COUNTER ──
+function animCount(el) {
+  if (el._done) return;
+  el._done = true;
+  var target   = parseInt(el.dataset.target, 10);
+  var pre      = el.dataset.prefix || '';
+  var suf      = el.dataset.suffix || '';
+  var cur      = 0;
+  var steps    = 70;
+  var interval = 1600 / steps;
+  var t = setInterval(function() {
+    cur = Math.min(cur + target/steps, target);
+    el.textContent = pre + Math.floor(cur) + suf;
+    if (cur >= target) clearInterval(t);
+  }, interval);
+}
+</script>
+</body>
+</html>
